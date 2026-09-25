@@ -16,14 +16,14 @@ Input → Entity Resolver → Coordinator → Specialists → Conflict Resolver 
 
 | Actor | Input | Trách nhiệm | Tool permission | Output/handoff |
 | --- | --- | --- | --- | --- |
-| Entity/customer | TODO | TODO | TODO | TODO |
-| Coordinator | TODO | TODO | TODO | TODO |
-| Order/product | TODO | TODO | TODO | TODO |
-| Shipment | TODO | TODO | TODO | TODO |
-| Payment/refund | TODO | TODO | TODO | TODO |
-| Policy | TODO | TODO | TODO | TODO |
-| Conflict resolver | TODO | TODO | TODO | TODO |
-| Verifier | TODO | TODO | TODO | TODO |
+| Entity/customer | case hints/candidates | resolve identity | get_order, get_customer_history | resolved/rejected IDs |
+| Coordinator | case and handoffs | bounded orchestration | delegates specialist calls | final aggregate |
+| Order/product | resolved order | inspect items/products/sellers | get_order_items, get_product_context, get_sellers | entity facts |
+| Shipment | resolved order | classify delivery timeline | get_shipment_summary | shipment verdict |
+| Payment/refund | resolved order | reconcile payment/refund | payment and refund tools | payment analysis |
+| Policy | issue and version | apply authoritative rule | get_policy | status/action |
+| Conflict resolver | specialist results | preserve source precedence | none | conflict records |
+| Verifier | complete case state | check schema/scope/refs/totals | none | validated output |
 
 Áp dụng least privilege; tool discovery không đồng nghĩa mọi actor đều được gọi mọi tool.
 
@@ -39,10 +39,10 @@ Mô tả cách validate MCP response, lưu `evidence_ref`, chọn source theo po
 
 | Failure | Retry budget | Fallback | Trace event/code |
 | --- | ---: | --- | --- |
-| MCP timeout | TODO | TODO | TODO |
-| Entity not found/ambiguous | TODO | TODO | TODO |
-| Source conflict | TODO | TODO | TODO |
-| Invalid specialist result | TODO | TODO | TODO |
+| MCP timeout | 1 bounded retry | keep missing evidence explicit | local error handling |
+| Entity not found/ambiguous | 0 retries | reject candidate; needs_investigation if none | entity_resolution |
+| Source conflict | 0 retries | prefer authoritative policy/timeline | policy_decided |
+| Invalid specialist result | 0 retries | discard and lower confidence | verification_completed |
 
 Nêu query budget/cache strategy để tránh gọi lặp và quét rộng. Retry phải có giới hạn, idempotent và không biến missing evidence thành dữ liệu phỏng đoán.
 
